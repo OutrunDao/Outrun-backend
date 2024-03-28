@@ -1,4 +1,4 @@
-package com.outrundao.backend.utils;
+package com.outrundao.backend.configs;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +9,7 @@ import org.web3j.protocol.http.HttpService;
 
 @Configuration
 public class Web3Configuration {
-    @Value("${client.rpc}")
+    @Value("${web3.rpc}")
     private String clientRPC;
 
     @Value("${caller.pk}")
