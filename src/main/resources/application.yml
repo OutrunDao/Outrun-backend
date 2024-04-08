@@ -4,3 +4,8 @@ spring:
 
 chain:
   id: 168587773
+
+contract:
+  vault:
+    eth: 0xb1eA15AA6deEE2267EeacD7b224eCc8DC019a3bC
+    usdb: 0x7044A1664b6d7Ab7779B7EcAE4Eb2604c260C525
