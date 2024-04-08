@@ -19,10 +19,10 @@ public class Result<T> {
     }
 
     public static<T> Result<T> success(String msg, T obj) {
-        return new Result<T>(true, msg, obj);
+        return new Result<>(true, msg, obj);
     }
 
     public static<T> Result<T> error(String msg) {
-        return new Result<T>(false, msg, null);
+        return new Result<>(false, msg, null);
     }
 }
