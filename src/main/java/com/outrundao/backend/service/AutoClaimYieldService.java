@@ -4,6 +4,8 @@ import com.outrundao.backend.contract.OutETHVault;
 import com.outrundao.backend.contract.OutUSDBVault;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
@@ -16,10 +18,12 @@ import org.web3j.tx.gas.DefaultGasProvider;
  */
 @Slf4j
 @Service
-public class AutoClaimYieldService implements IAutoClaimYieldService {
-    private static final String OUT_ETH_VAULT_ADDRESS = "0xb1eA15AA6deEE2267EeacD7b224eCc8DC019a3bC";
+public class AutoClaimYieldService {
+    @Value("${contract.vault.eth}")
+    private String outEthVaultAddress;
 
-    private static final String OUT_USDB_VAULT_ADDRESS = "0x7044A1664b6d7Ab7779B7EcAE4Eb2604c260C525";
+    @Value("${contract.vault.usdb}")
+    private String outUsdbVaultAddress;
 
     private final Web3j CLIENT;
 
@@ -30,6 +34,7 @@ public class AutoClaimYieldService implements IAutoClaimYieldService {
     /**
      * @param client web3 client
      * @param caller caller to send transaction
+     * @param chainId - chain Id
      */
     @Autowired
     public AutoClaimYieldService(Web3j client, Credentials caller, long chainId) {
@@ -38,12 +43,14 @@ public class AutoClaimYieldService implements IAutoClaimYieldService {
         this.CHAIN_ID = chainId;
     }
 
-    @Override
-    public void claimETHYield() throws Exception {
+    /**
+     * Claim ETH native yield
+     */
+    private void claimETHNativeYield() throws Exception {
         log.info("Claiming ETH yield......");
 
         OutETHVault vault = OutETHVault.load(
-                OUT_ETH_VAULT_ADDRESS,
+                outEthVaultAddress,
                 CLIENT,
                 new RawTransactionManager(CLIENT, CALLER, CHAIN_ID),
                 new DefaultGasProvider()
@@ -58,12 +65,14 @@ public class AutoClaimYieldService implements IAutoClaimYieldService {
         log.info("Block Number: {}, Transaction Hash: {}", transactionReceipt.getBlockNumber(), transactionReceipt.getTransactionHash());
     }
 
-    @Override
-    public void claimUSDBYield() throws Exception {
+    /**
+     * Claim USDB native yield
+     */
+    private void claimUSDBNativeYield() throws Exception {
         log.info("Claiming USDB yield......");
 
         OutUSDBVault vault = OutUSDBVault.load(
-                OUT_USDB_VAULT_ADDRESS,
+                outUsdbVaultAddress,
                 CLIENT,
                 new RawTransactionManager(CLIENT, CALLER, CHAIN_ID),
                 new DefaultGasProvider()
@@ -76,5 +85,16 @@ public class AutoClaimYieldService implements IAutoClaimYieldService {
             log.error("ClaimUSDBYield failed!");
         }
         log.info("Block Number: {}, Transaction Hash: {}", transactionReceipt.getBlockNumber(), transactionReceipt.getTransactionHash());
+    }
+
+    /**
+     * Scheduled task: Automatic claim of native yield
+     */
+    @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
+    private void autoClaimNativeYield() throws Exception {
+        log.info("Auto claim native yield......");
+
+        claimETHNativeYield();
+        claimUSDBNativeYield();
     }
 }
